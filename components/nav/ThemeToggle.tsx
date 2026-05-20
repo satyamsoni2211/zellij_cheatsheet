@@ -7,7 +7,7 @@ const themes = [
   { name: 'terminal-dark', label: 'Terminal Dark', icon: '⌨' },
   { name: 'paper-light', label: 'Paper Light', icon: '☀' },
   { name: 'gruvbox-warm', label: 'Gruvbox Warm', icon: '🍂' },
-  { name: 'nightowl-blue', label: 'Night Owl', icon: '🌙' },
+  { name: 'nightowl', label: 'Night Owl', icon: '🌙' },
 ]
 
 export function ThemeToggle() {

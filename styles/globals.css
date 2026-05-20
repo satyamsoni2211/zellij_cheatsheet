@@ -1,4 +1,3 @@
-@import 'tailwindcss';
 @import './themes/terminal.css';
 @import './themes/paper.css';
 @import './themes/gruvbox.css';

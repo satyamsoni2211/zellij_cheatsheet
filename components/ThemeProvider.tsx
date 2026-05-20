@@ -3,7 +3,7 @@
 import { ThemeProvider as NextThemesProvider } from 'next-themes'
 import { ReactNode } from 'react'
 
-const themes = ['terminal-dark', 'paper-light', 'gruvbox-warm', 'nightowl-blue']
+const themes = ['terminal-dark', 'paper-light', 'gruvbox-warm', 'nightowl']
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   return (
