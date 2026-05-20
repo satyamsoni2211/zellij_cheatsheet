@@ -1,0 +1,35 @@
+/* Terminal Dark Theme - Default dark theme with terminal aesthetics */
+:root,
+.dark,
+.terminal-dark {
+  /* Backgrounds */
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-terminal: #020617;
+
+  /* Text */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-mono: #38bdf8;
+
+  /* Accent */
+  --accent: #2dd4bf;
+  --accent-muted: #0d9488;
+  --accent-text: #042f2e;
+
+  /* Borders */
+  --border: #334155;
+  --border-strong: #475569;
+
+  /* Mode badges - Terminal colors */
+  --mode-normal: #22c55e;
+  --mode-pane: #eab308;
+  --mode-tab: #3b82f6;
+  --mode-scroll: #06b6d4;
+  --mode-session: #a855f7;
+
+  /* Keyboard keys */
+  --kbd-bg: #1e293b;
+  --kbd-border: #334155;
+  --kbd-text: #f1f5f9;
+}

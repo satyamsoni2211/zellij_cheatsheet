@@ -1,0 +1,33 @@
+/* Night Owl Blue Theme - Deep blue with electric accents */
+.nightowl-blue {
+  /* Backgrounds */
+  --bg-primary: #011627;
+  --bg-secondary: #012a4a;
+  --bg-terminal: #010d1a;
+
+  /* Text */
+  --text-primary: #d6deeb;
+  --text-secondary: #7aa2f7;
+  --text-mono: #7dcfff;
+
+  /* Accent */
+  --accent: #7dcfff;
+  --accent-muted: #3b8eee;
+  --accent-text: #011627;
+
+  /* Borders */
+  --border: #1a3a5c;
+  --border-strong: #2d5a87;
+
+  /* Mode badges - Night owl colors */
+  --mode-normal: #9ece4e;
+  --mode-pane: #e0af68;
+  --mode-tab: #7aa2f7;
+  --mode-scroll: #73daca;
+  --mode-session: #bb9af7;
+
+  /* Keyboard keys */
+  --kbd-bg: #012a4a;
+  --kbd-border: #1a3a5c;
+  --kbd-text: #d6deeb;
+}

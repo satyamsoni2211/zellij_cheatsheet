@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { JetBrains_Mono, Geist } from 'next/font/google'
 import { ThemeProvider } from '@/components/ThemeProvider'
-import './globals.css'
+import '@/styles/globals.css'
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],

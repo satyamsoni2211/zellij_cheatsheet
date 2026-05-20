@@ -1,0 +1,33 @@
+/* Gruvbox Warm Theme - Earth tones, classic retro feel */
+.gruvbox-warm {
+  /* Backgrounds */
+  --bg-primary: #282828;
+  --bg-secondary: #32302f;
+  --bg-terminal: #1d2021;
+
+  /* Text */
+  --text-primary: #fbf1c7;
+  --text-secondary: #a89984;
+  --text-mono: #f9bc2c;
+
+  /* Accent */
+  --accent: #f9bc2c;
+  --accent-muted: #b8bb26;
+  --accent-text: #282828;
+
+  /* Borders */
+  --border: #3c3836;
+  --border-strong: #504945;
+
+  /* Mode badges - Gruvbox colors */
+  --mode-normal: #b8bb26;
+  --mode-pane: #f9bc2c;
+  --mode-tab: #83a598;
+  --mode-scroll: #8ec07c;
+  --mode-session: #d3869b;
+
+  /* Keyboard keys */
+  --kbd-bg: #32302f;
+  --kbd-border: #3c3836;
+  --kbd-text: #fbf1c7;
+}
