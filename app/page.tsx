@@ -1,12 +1,14 @@
 import { Navbar } from '@/components/nav/Navbar'
 import { HeroSection } from '@/components/hero/HeroSection'
 import { TmuxComparisonStrip } from '@/components/hero/TmuxComparisonStrip'
+import { EssentialsSection } from '@/components/cheatsheet/EssentialsSection'
 import { SimulatorSection } from '@/components/simulator/SimulatorSection'
+import { LayoutsSection } from '@/components/layouts/LayoutsSection'
+import { PluginsSection } from '@/components/plugins/PluginsSection'
+import { WorkflowsSection } from '@/components/workflows/WorkflowsSection'
 import { QuickRefDrawer } from '@/components/ui/QuickRefDrawer'
 import { CommandPalette } from '@/components/ui/CommandPalette'
 import { Footer } from '@/components/footer/Footer'
-import { LayoutsSection } from '@/components/layouts/LayoutsSection'
-import { PluginsSection } from '@/components/plugins/PluginsSection'
 
 export default function Home() {
   return (
@@ -16,7 +18,7 @@ export default function Home() {
       <HeroSection />
       <TmuxComparisonStrip />
       <div id="essentials" className="scroll-mt-20">
-        <p className="text-center text-[var(--text-secondary)] py-20">Shortcut cheatsheet coming soon...</p>
+        <EssentialsSection />
       </div>
       <div id="simulator" className="scroll-mt-20">
         <SimulatorSection />
@@ -28,7 +30,7 @@ export default function Home() {
         <PluginsSection />
       </div>
       <div id="workflows" className="scroll-mt-20">
-        <p className="text-center text-[var(--text-secondary)] py-20">Workflows coming soon...</p>
+        <WorkflowsSection />
       </div>
       <QuickRefDrawer />
       <Footer />
