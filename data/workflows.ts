@@ -24,33 +24,34 @@ export const workflows: Workflow[] = [
     steps: [
       {
         instruction: 'Enable session serialization in your Zellij config',
-        command: 'session_serialization true',
+        command: `// In ~/.config/zellij/config.kdl
+session_serialization true`,
         explanation: 'Add this to your config.kdl file to enable automatic session saving.',
       },
       {
         instruction: 'Verify session_serialization is active',
-        command: 'zellij options --session-serialization',
+        command: `zellij options --session-serialization`,
         tip: 'You should see "true" in the output.',
       },
       {
         instruction: 'Start your session as usual',
-        command: 'zellij -s myproject',
+        command: `zellij -s myproject`,
         explanation: 'Create panes, open files, run processes. Zellij saves state periodically.',
       },
       {
         instruction: 'Disconnect from the session',
-        command: 'Ctrl+o, d',
+        command: `Ctrl + o  then  d`,
         explanation: 'Your session is now preserved in the background.',
       },
       {
         instruction: 'After reboot, reattach to your session',
-        command: 'zellij attach myproject',
+        command: `zellij attach myproject`,
         explanation: 'All panes, tabs, and working directories are restored.',
         tip: 'Use zellij list-sessions to see all preserved sessions.',
       },
       {
         instruction: 'Manually trigger a session save (optional)',
-        command: 'zellij action dump-screen',
+        command: `zellij action dump-screen`,
         explanation: 'Forces an immediate save of current state to disk.',
       },
     ],
@@ -68,25 +69,34 @@ export const workflows: Workflow[] = [
       },
       {
         instruction: 'Enable the tmux-style keybinding preset',
-        command: 'keybinds tmux',
+        command: `keybinds "tmux"`,
         explanation: 'This changes Ctrl+b to be your prefix, similar to tmux.',
       },
       {
         instruction: 'Learn the equivalent operations (session)',
-        explanation: 'Ctrl+b d → Ctrl+o d (detach)\nCtrl+b $ → Ctrl+o r (rename)\nCtrl+b s → Ctrl+o w (session manager)',
+        command: `Ctrl + o  then  d     # detach
+Ctrl + o  then  r     # rename
+Ctrl + o  then  w     # session manager`,
+        explanation: 'tmux: Ctrl+b d → Zellij: Ctrl+o d',
       },
       {
         instruction: 'Learn pane operations',
-        explanation: 'Ctrl+b " → Ctrl+p d (split down)\nCtrl+b % → Ctrl+p r (split right)\nCtrl+b arrows → Ctrl+p arrows (navigate)',
+        command: `Ctrl + p  then  d     # split down
+Ctrl + p  then  r     # split right
+Ctrl + p  then  ↑↓←→  # navigate panes`,
+        explanation: 'tmux: Ctrl+b " → Zellij: Ctrl+p d (split down)',
       },
       {
         instruction: 'Learn tab operations',
-        explanation: 'Ctrl+b c → Ctrl+t n (new tab)\nCtrl+b n/p → Ctrl+t arrows (next/prev tab)\nCtrl+b , → Ctrl+t r (rename tab)',
+        command: `Ctrl + t  then  n     # new tab
+Ctrl + t  then  x     # close tab
+Ctrl + t  then  ←→     # navigate tabs`,
+        explanation: 'tmux: Ctrl+b c → Zellij: Ctrl+t n (new tab)',
       },
       {
         instruction: 'Migrate your existing tmux sessions',
-        command: 'tmux list-sessions',
-        explanation: 'List your tmux sessions, then manually recreate them in Zellij, or use a layout file to automate.',
+        command: `tmux list-sessions`,
+        explanation: 'List your tmux sessions, then manually recreate them in Zellij, or use a layout file.',
       },
     ],
   },
@@ -97,37 +107,43 @@ export const workflows: Workflow[] = [
     difficulty: 'advanced',
     steps: [
       {
-        instruction: 'Create a layout file for your server cluster',
-        command: 'mkdir -p ~/.config/zellij/layouts',
+        instruction: 'Create a layout directory for your server cluster',
+        command: `mkdir -p ~/.config/zellij/layouts`,
         tip: 'Layouts go in ~/.config/zellij/layouts/ or specify with --layout flag.',
       },
       {
-        instruction: 'Define panes that SSH to different servers',
-        explanation: 'Create a .kdl layout file that specifies SSH connections for each pane.',
-      },
-      {
-        instruction: 'Example layout structure',
-        command: 'layout {\n  pane { ssh user@server1 }\n  pane { ssh user@server2 }\n  pane { ssh user@server3 }\n}',
+        instruction: 'Create a .kdl layout file with SSH panes',
+        command: `layout {
+    tab name="servers" {
+        pane size=1/3 { command "ssh user@server1"; }
+        pane size=1/3 { command "ssh user@server2"; }
+        pane { command "ssh user@server3"; }
+    }
+}`,
         explanation: 'Each pane opens an SSH session to a different server.',
       },
       {
         instruction: 'Start the multi-server session',
-        command: 'zellij --layout my-servers',
+        command: `zellij --layout my-servers`,
         explanation: 'Opens all servers in a preconfigured layout.',
       },
       {
         instruction: 'Handle SSH key forwarding',
-        explanation: 'Ensure your SSH config has ForwardAgent yes for key forwarding between servers.',
+        command: `# In ~/.ssh/config
+Host *
+    ForwardAgent yes`,
+        explanation: 'Ensure your SSH config has ForwardAgent enabled for key forwarding.',
         tip: 'Edit ~/.ssh/config to enable agent forwarding.',
       },
       {
         instruction: 'Handle network drops gracefully',
-        command: 'zellij attach my-servers',
-        explanation: 'Use this command to reattach after a network interruption. All panes reconnect.',
+        command: `zellij attach my-servers`,
+        explanation: 'Use this command to reattach after a network interruption.',
       },
       {
         instruction: 'Create named sessions per environment',
-        command: 'zellij -s prod-webserver',
+        command: `zellij -s prod-webserver
+zellij -s staging-webserver`,
         explanation: 'Keep separate sessions for dev, staging, prod environments.',
       },
     ],
@@ -140,17 +156,17 @@ export const workflows: Workflow[] = [
     steps: [
       {
         instruction: 'Start a shareable session',
-        command: 'zellij --share',
+        command: `zellij --share`,
         explanation: 'The --share flag makes your session discoverable to others on the network.',
       },
       {
-        instruction: 'Generate a session URL or connection info',
-        command: 'zellij action session-share',
+        instruction: 'Generate session connection info',
+        command: `zellij action session-share`,
         explanation: 'This outputs the connection details your teammates need.',
       },
       {
         instruction: 'Team members connect to your session',
-        command: 'zellij attach <session-name>',
+        command: `zellij attach <session-name>`,
         explanation: 'Each collaborator gets a unique colored cursor to identify them.',
       },
       {
@@ -172,27 +188,38 @@ export const workflows: Workflow[] = [
     steps: [
       {
         instruction: 'Create a .zellij directory in your project root',
-        command: 'mkdir -p .zellij',
+        command: `mkdir -p .zellij`,
         tip: 'Commit this to version control so the whole team benefits.',
       },
       {
         instruction: 'Create a dev.kdl layout for your project',
-        command: '.zellij/dev.kdl',
         explanation: 'Define a layout with all your development tools open.',
       },
       {
         instruction: 'Define panes in your layout',
-        command: 'layout {\n  pane {\n    cwd "/path/to/project"\n    command "nvim"\n  }\n  pane { command "npm run dev" }\n  pane { command "npm test -- --watch" }\n}',
+        command: `layout {
+    tab name="dev" {
+        pane size=3/4 {
+            cwd "/path/to/project"
+            command "nvim"
+        }
+        pane { command "npm run dev"; }
+        pane { command "npm test -- --watch"; }
+    }
+}`,
         explanation: 'Set working directory and start commands for each pane.',
       },
       {
         instruction: 'Add a Makefile target for convenience',
-        command: '.PHONY: dev\ndev:\n\tzellij --layout .zellij/dev.kdl',
+        command: `.PHONY: dev
+dev:
+	zellij --layout .zellij/dev.kdl`,
         explanation: 'Run make dev to launch your full development environment.',
       },
       {
         instruction: 'Commit the layout to your repo',
-        command: 'git add .zellij/dev.kdl Makefile\ngit commit -m "add dev environment layout"',
+        command: `git add .zellij/dev.kdl Makefile
+git commit -m "add dev environment layout"`,
         explanation: 'Teammates get the same setup with make dev.',
       },
     ],
@@ -210,23 +237,25 @@ export const workflows: Workflow[] = [
       },
       {
         instruction: 'Solution 1: Use Lock Mode',
-        command: 'Ctrl+g',
+        command: `Ctrl + g`,
         explanation: 'Press Ctrl+g to lock Zellij. All keys pass through to the underlying app until unlocked.',
       },
       {
         instruction: 'Unlock after finishing in Vim',
-        command: 'Ctrl+g',
+        command: `Ctrl + g`,
         explanation: 'Press Ctrl+g again to return Zellij to normal operation.',
         tip: "Lock mode is instant and doesn't require configuration.",
       },
       {
         instruction: 'Solution 2: Use the Unlock First preset',
-        command: 'keybinds unlock-first',
+        command: `keybinds "unlock-first"`,
         explanation: 'This preset requires a Ctrl+o prefix before mode keys, letting Vim use Ctrl+p directly.',
       },
       {
         instruction: 'Solution 3: Remap conflicting keys',
-        command: 'unbind "Ctrl+p"\nbind "Ctrl+p" { SwitchToMode "Normal"; }',
+        command: `// In config.kdl
+unbind "Ctrl+p"
+bind "Ctrl+\\" { SwitchToMode "Normal"; }`,
         explanation: 'Remove Zellij\'s binding and reassign to an unused key combination.',
         tip: 'Add to config.kdl for permanent changes.',
       },
@@ -240,12 +269,12 @@ export const workflows: Workflow[] = [
     steps: [
       {
         instruction: 'Enter pane mode',
-        command: 'Ctrl+p',
+        command: `Ctrl + p`,
         explanation: 'Press Ctrl+p to enter pane mode.',
       },
       {
         instruction: 'Create a floating pane',
-        command: 'Ctrl+p, f',
+        command: `Ctrl + p  then  f`,
         explanation: 'This opens the focused pane as a floating window.',
         tip: 'Floating panes appear on top of tiled panes.',
       },
@@ -261,13 +290,13 @@ export const workflows: Workflow[] = [
       },
       {
         instruction: 'Open floating pane from CLI',
-        command: 'zellij action start-or-reload-plugin "file:/path/to/plugin"',
+        command: `zellij action start-or-reload-plugin "file:/path/to/plugin"`,
         explanation: 'Open specific plugins in a floating pane from the command line.',
       },
       {
         instruction: 'Dismiss a floating pane without closing',
-        command: 'Ctrl+p, e',
-        explanation: 'Embed the floating pane back into the tiled layout, or use Ctrl+p, x to close it.',
+        command: `Ctrl + p  then  e`,
+        explanation: 'Embed the floating pane back into the tiled layout, or x to close.',
       },
     ],
   },
@@ -279,27 +308,36 @@ export const workflows: Workflow[] = [
     steps: [
       {
         instruction: 'Install zjstatus for a rich status bar',
-        command: 'git clone https://github.com/NicoSaber/zjstatus ~/.config/zellij/plugins/zjstatus',
+        command: `zellij plugin run https://github.com/dj95/zjstatus`,
         explanation: 'zjstatus shows CPU, RAM, date, time, and git branch in your status bar.',
       },
       {
         instruction: 'Install monocle for fuzzy file search',
-        command: 'git clone https://github.com/NicoSaber/monocle ~/.config/zellij/plugins/monocle',
+        command: `zellij plugin run https://github.com/imsnif/monocle`,
         explanation: 'Monocle provides vim-fzf style fuzzy finding across your project.',
       },
       {
         instruction: 'Install harpoon for pane bookmarks',
-        command: 'git clone https://github.com/NicoSaber/harpoon ~/.config/zellij/plugins/harpoon',
+        command: `zellij plugin run https://github.com/Nacho114/harpoon`,
         explanation: 'Harpoon lets you bookmark specific panes and jump between them instantly.',
       },
       {
         instruction: 'Configure plugins in config.kdl',
-        command: 'plugins {\n  "file:~/.config/zellij/plugins/zjstatus.wasm"\n  "file:~/.config/zellij/plugins/monocle.wasm"\n}',
+        command: `// In ~/.config/zellij/config.kdl
+plugins {
+    "file:~/.config/zellij/plugins/zjstatus.wasm"
+    "file:~/.config/zellij/plugins/monocle.wasm"
+}`,
         explanation: 'Add plugin paths to your Zellij configuration.',
       },
       {
         instruction: 'Enable plugin in layout',
-        command: 'layout {\n  pane_plugin "file:~/.config/zellij/plugins/zjstatus.wasm"\n}',
+        command: `layout {
+    tab name="editor" {
+        pane_plugin "file:~/.config/zellij/plugins/zjstatus.wasm"
+        pane { command "nvim"; }
+    }
+}`,
         explanation: 'Reference the plugin in your layout file to activate it.',
       },
       {
