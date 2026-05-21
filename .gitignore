@@ -4,3 +4,4 @@ out
 dist
 /.next
 /out
+/implementation_plan.md
