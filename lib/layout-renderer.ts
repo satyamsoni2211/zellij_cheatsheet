@@ -14,125 +14,109 @@ export interface LayoutDiagram {
   width: number
   height: number
   panes: PaneRect[]
+  tabs: string[]
   error?: string
 }
 
 const PADDING = 10
 const PANE_GAP = 4
-const TAB_HEIGHT = 24
-const HEADER_HEIGHT = 32
+const TAB_HEIGHT = 28
+const HEADER_HEIGHT = 36
 const MIN_PANE_WIDTH = 80
-const MIN_PANE_HEIGHT = 40
+const MIN_PANE_HEIGHT = 50
 
-export function calculateLayout(children: KDLNode[], x: number, y: number, width: number, height: number): PaneRect[] {
+export function calculateLayout(node: KDLNode, x: number, y: number, width: number, height: number): PaneRect[] {
   const panes: PaneRect[] = []
 
-  const splitHorizontally = children.filter(c => c.name === 'split' && c.props.direction === 'horizontal')
-  const splitVertically = children.filter(c => c.name === 'split' && c.props.direction === 'vertical')
-  const panes_direct = children.filter(c => c.name === 'pane')
-
-  const splits = [...splitHorizontally, ...splitVertically]
-
-  if (splits.length === 0 && panes_direct.length === 0) {
-    // Leaf node - no children, will be handled at a higher level
-    return []
-  }
-
-  if (splits.length === 0 && panes_direct.length > 0) {
-    // Direct panes at this level
-    const paneWidth = (width - PADDING * 2 - PANE_GAP * (panes_direct.length - 1)) / panes_direct.length
-    let currentX = x + PADDING
-
-    for (const pane of panes_direct) {
-      const paneName = pane.args[0] || pane.props.name || 'pane'
-      const paneCommand = pane.props.command
-
-      panes.push({
-        x: currentX,
-        y: y + HEADER_HEIGHT,
-        width: Math.max(paneWidth, MIN_PANE_WIDTH),
-        height: Math.max(height - HEADER_HEIGHT - PADDING, MIN_PANE_HEIGHT),
-        name: paneName,
-        command: paneCommand,
-        tabs: [],
-      })
-      currentX += paneWidth + PANE_GAP
-    }
+  if (node.name === 'pane') {
+    const paneName = node.args[0] || node.props.name || 'pane'
+    const paneCommand = node.props.command
+    panes.push({
+      x: x + PADDING,
+      y: y + HEADER_HEIGHT,
+      width: Math.max(width - PADDING * 2, MIN_PANE_WIDTH),
+      height: Math.max(height - HEADER_HEIGHT - PADDING * 2, MIN_PANE_HEIGHT),
+      name: paneName,
+      command: paneCommand,
+      tabs: [],
+    })
     return panes
   }
 
-  // For splits, distribute space among children
-  if (splits.length === 1) {
-    const split = splits[0]
-    const isHorizontal = split.props.direction === 'horizontal'
+  if (node.name === 'split') {
+    const direction = node.props.direction || 'horizontal'
+    const children = node.children
 
-    const childPanes: PaneRect[] = []
-    for (const child of split.children) {
-      if (child.name === 'pane') {
-        const paneName = child.args[0] || child.props.name || 'pane'
-        const paneCommand = child.props.command
-        childPanes.push({
-          x: 0,
-          y: 0,
-          width: 100,
-          height: 100,
-          name: paneName,
-          command: paneCommand,
-          tabs: [],
-        })
-      } else {
-        const subPanes = calculateLayout([child], 0, 0, 100, 100)
-        childPanes.push(...subPanes)
-      }
-    }
+    if (children.length === 0) return panes
 
-    if (isHorizontal) {
+    if (direction === 'horizontal') {
       const totalWidth = width - PADDING * 2
-      const portionWidth = (totalWidth - PANE_GAP * (childPanes.length - 1)) / childPanes.length
+      const portionWidth = (totalWidth - PANE_GAP * (children.length - 1)) / children.length
       let currentX = x + PADDING
-      for (const childPane of childPanes) {
-        panes.push({
-          ...childPane,
-          x: currentX,
-          y: y + HEADER_HEIGHT,
-          width: portionWidth,
-          height: height - HEADER_HEIGHT - PADDING,
-        })
+
+      for (const child of children) {
+        const childPanes = calculateLayout(child, currentX, y, portionWidth, height)
+        for (const cp of childPanes) {
+          cp.x = currentX
+          cp.width = portionWidth
+          cp.y = y + HEADER_HEIGHT
+          cp.height = height - HEADER_HEIGHT - PADDING
+        }
+        panes.push(...childPanes)
         currentX += portionWidth + PANE_GAP
       }
     } else {
       const totalHeight = height - HEADER_HEIGHT - PADDING
-      const portionHeight = (totalHeight - PANE_GAP * (childPanes.length - 1)) / childPanes.length
+      const portionHeight = (totalHeight - PANE_GAP * (children.length - 1)) / children.length
       let currentY = y + HEADER_HEIGHT
-      for (const childPane of childPanes) {
-        panes.push({
-          ...childPane,
-          x: x + PADDING,
-          y: currentY,
-          width: width - PADDING * 2,
-          height: portionHeight,
-        })
+
+      for (const child of children) {
+        const childPanes = calculateLayout(child, x, currentY, width, portionHeight)
+        for (const cp of childPanes) {
+          cp.y = currentY
+          cp.height = portionHeight
+          cp.x = x + PADDING
+          cp.width = width - PADDING * 2
+        }
+        panes.push(...childPanes)
         currentY += portionHeight + PANE_GAP
       }
     }
     return panes
   }
 
-  // Multiple splits - recursively handle each
-  for (const split of splits) {
-    const subPanes = calculateLayout([split], x, y, width, height)
-    panes.push(...subPanes)
+  if (node.name === 'tab') {
+    for (const child of node.children) {
+      const childPanes = calculateLayout(child, x, y, width, height)
+      panes.push(...childPanes)
+    }
+    return panes
+  }
+
+  if (node.name === 'layout') {
+    for (const child of node.children) {
+      const childPanes = calculateLayout(child, x, y, width, height)
+      panes.push(...childPanes)
+    }
+    return panes
   }
 
   return panes
 }
 
+export function extractTabs(nodes: KDLNode[]): string[] {
+  const tabs: string[] = []
+  for (const node of nodes) {
+    if (node.name === 'tab') {
+      tabs.push(node.args[0] || 'Tab')
+    }
+  }
+  return tabs
+}
+
 export function renderLayoutToSVG(children: KDLNode[], width: number = 600, height: number = 400): LayoutDiagram {
   try {
-    const panes = calculateLayout(children, 0, 0, width, height)
-
-    if (panes.length === 0) {
-      // No layout found, show empty state
+    if (children.length === 0) {
       return {
         width,
         height,
@@ -144,6 +128,36 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
           name: 'Empty Layout',
           tabs: [],
         }],
+        tabs: [],
+      }
+    }
+
+    const layoutNode = children.find(n => n.name === 'layout')
+    const layoutChildren = layoutNode ? layoutNode.children : children.filter(n => n.name !== 'root')
+
+    const tabs = extractTabs(layoutChildren)
+
+    const panes: PaneRect[] = []
+    for (const child of layoutChildren) {
+      if (child.name === 'tab' || child.name === 'split' || child.name === 'pane') {
+        const childPanes = calculateLayout(child, 0, 0, width, height)
+        panes.push(...childPanes)
+      }
+    }
+
+    if (panes.length === 0) {
+      return {
+        width,
+        height,
+        panes: [{
+          x: PADDING,
+          y: HEADER_HEIGHT,
+          width: width - PADDING * 2,
+          height: height - HEADER_HEIGHT - PADDING,
+          name: 'Empty Layout',
+          tabs: [],
+        }],
+        tabs: [],
       }
     }
 
@@ -151,43 +165,55 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
       width,
       height,
       panes,
+      tabs,
     }
   } catch (e) {
+    console.error('Layout render error:', e)
     return {
       width,
       height,
       panes: [],
+      tabs: [],
       error: e instanceof Error ? e.message : 'Unknown error',
     }
   }
 }
 
 export function generateSVG(diagram: LayoutDiagram, activeTab: string = 'Main'): string {
-  const { width, height, panes, error } = diagram
+  const { width, height, panes, tabs, error } = diagram
 
   if (error) {
     return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="#1a1a2e" rx="8"/>
-      <text x="50%" y="50%" text-anchor="middle" fill="#ff6b6b" font-family="monospace" font-size="14">
+      <rect width="100%" height="100%" fill="var(--surface)"/>
+      <text x="50%" y="50%" text-anchor="middle" fill="var(--text-secondary)" font-family="monospace" font-size="14">
         Error: ${error}
       </text>
     </svg>`
   }
 
+  const tabLabels = tabs.length > 0 ? tabs : [activeTab]
+  const tabBarHeight = tabLabels.length > 1 ? TAB_HEIGHT * Math.min(tabLabels.length, 3) : 0
+
   const paneRects = panes.map(p => `
-    <rect x="${p.x}" y="${p.y}" width="${p.width}" height="${p.height}" fill="#2d2d44" stroke="#4a4a6a" stroke-width="1" rx="4"/>
-    <text x="${p.x + p.width / 2}" y="${p.y + p.height / 2}" text-anchor="middle" dominant-baseline="middle" fill="#e0e0e0" font-family="monospace" font-size="11">
+    <rect x="${p.x}" y="${p.y}" width="${p.width}" height="${p.height}" fill="var(--surface-secondary)" stroke="var(--border)" stroke-width="1" rx="4"/>
+    <text x="${p.x + p.width / 2}" y="${p.y + p.height / 2}" text-anchor="middle" dominant-baseline="middle" fill="var(--text-primary)" font-family="ui-monospace, monospace" font-size="12">
       ${escapeXml(p.name)}
     </text>
-    ${p.command ? `<text x="${p.x + p.width / 2}" y="${p.y + p.height / 2 + 14}" text-anchor="middle" dominant-baseline="middle" fill="#888" font-family="monospace" font-size="9">
-      ${escapeXml(p.command.length > 30 ? p.command.slice(0, 27) + '...' : p.command)}
+    ${p.command ? `<text x="${p.x + p.width / 2}" y="${p.y + p.height / 2 + 16}" text-anchor="middle" dominant-baseline="middle" fill="var(--text-muted)" font-family="ui-monospace, monospace" font-size="10">
+      ${escapeXml(p.command.length > 25 ? p.command.slice(0, 22) + '...' : p.command)}
     </text>` : ''}
   `).join('')
 
+  const tabBars = tabLabels.map((tab, i) => `
+    <rect x="${i * 100 + 10}" y="4" width="90" height="24" fill="${tab === activeTab ? 'var(--border)' : 'transparent'}" rx="4"/>
+    <text x="${i * 100 + 55}" y="18" text-anchor="middle" fill="${tab === activeTab ? 'var(--text-primary)' : 'var(--text-muted)'}" font-family="ui-monospace, monospace" font-size="11">${escapeXml(tab)}</text>
+  `).join('')
+
   return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100%" height="100%" fill="#1a1a2e" rx="8"/>
-    <rect x="0" y="0" width="${width}" height="${HEADER_HEIGHT}" fill="#16162a" rx="8"/>
-    <text x="12" y="20" fill="#888" font-family="monospace" font-size="12">${escapeXml(activeTab)}</text>
+    <rect width="100%" height="100%" fill="var(--surface)" rx="8"/>
+    <rect x="0" y="0" width="${width}" height="${HEADER_HEIGHT}" fill="var(--surface-secondary)" rx="8"/>
+    ${tabBars}
+    <rect x="0" y="${HEADER_HEIGHT - 4}" width="${width}" height="4" fill="var(--surface-secondary)"/>
     ${paneRects}
   </svg>`
 }

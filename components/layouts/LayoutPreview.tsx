@@ -29,8 +29,11 @@ export function LayoutPreview({ kdl, debounceMs = 300 }: LayoutPreviewProps) {
         setError(null)
 
         // Extract layout children from parse result
-        const layoutNode = result.nodes.find(n => n.name === 'layout')
-        const children: KDLNode[] = layoutNode?.children || result.nodes.filter(n => n.name !== 'root')
+        // result.nodes[0] is the synthetic 'root' node whose children hold the actual layout content
+        const rootNode = result.nodes[0]
+        const layoutChildren: KDLNode[] = rootNode?.children || []
+        const layoutNode = layoutChildren.find(n => n.name === 'layout')
+        const children: KDLNode[] = layoutNode ? layoutNode.children : layoutChildren
 
         const diagram = renderLayoutToSVG(children, 500, 300)
         const newSvg = generateSVG(diagram, 'Preview')

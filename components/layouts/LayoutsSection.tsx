@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, lazy, Suspense } from 'react'
+import { useState, useCallback, lazy, Suspense, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { LayoutPreview } from './LayoutPreview'
 import { TemplateGallery } from './TemplateGallery'
@@ -34,19 +34,36 @@ const defaultKDL = `layout {
 
 export function LayoutsSection() {
   const [currentKDL, setCurrentKDL] = useState(defaultKDL)
+  const [notification, setNotification] = useState<string | null>(null)
+  const editorRef = useRef<HTMLDivElement>(null)
+  const notificationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const handleEditorChange = useCallback((value: string) => {
     setCurrentKDL(value)
   }, [])
 
+  const showNotification = useCallback((message: string) => {
+    setNotification(message)
+    if (notificationTimeoutRef.current) {
+      clearTimeout(notificationTimeoutRef.current)
+    }
+    notificationTimeoutRef.current = setTimeout(() => {
+      setNotification(null)
+    }, 2000)
+  }, [])
+
   const handleLoadTemplate = useCallback((kdl: string) => {
     setCurrentKDL(kdl)
-  }, [])
+    showNotification('Layout loaded into editor')
+    // Scroll to editor
+    editorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }, [showNotification])
 
   const handleCopyCommand = async () => {
     const command = generateLaunchCommand('custom')
     try {
       await navigator.clipboard.writeText(command)
+      showNotification('Command copied!')
     } catch (e) {
       console.error('Failed to copy:', e)
     }
@@ -62,10 +79,18 @@ export function LayoutsSection() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+    showNotification('Layout downloaded!')
   }
 
   return (
     <section className="py-20 px-4 max-w-7xl mx-auto">
+      {/* Notification */}
+      {notification && (
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 bg-green-500 text-white rounded-lg shadow-lg animate-fade-in">
+          {notification}
+        </div>
+      )}
+
       {/* Section Header */}
       <div className="text-center mb-12">
         <h2 className="text-3xl font-bold text-[var(--text-primary)] mb-4">
@@ -80,7 +105,7 @@ export function LayoutsSection() {
       {/* Two-panel Editor with Preview */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-16">
         {/* Editor Panel */}
-        <div className="space-y-3">
+        <div className="space-y-3" ref={editorRef}>
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-[var(--text-muted)] uppercase tracking-wide">
               KDL Editor
