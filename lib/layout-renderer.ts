@@ -30,10 +30,10 @@ export function calculateLayout(node: KDLNode, x: number, y: number, width: numb
 
   if (node.name === 'pane') {
     panes.push({
-      x: x + PADDING,
-      y: y + HEADER_HEIGHT,
-      width: Math.max(width - PADDING * 2, MIN_PANE_WIDTH),
-      height: Math.max(height - HEADER_HEIGHT - PADDING * 2, MIN_PANE_HEIGHT),
+      x: x,
+      y: y,
+      width: Math.max(width, MIN_PANE_WIDTH),
+      height: Math.max(height, MIN_PANE_HEIGHT),
       name: node.args[0] || node.props.name || 'pane',
       command: node.props.command,
       tabs: [],
@@ -47,18 +47,18 @@ export function calculateLayout(node: KDLNode, x: number, y: number, width: numb
     if (children.length === 0) return panes
 
     if (isHorizontal) {
-      const totalWidth = width - PADDING * 2
+      const totalWidth = width
       const portionWidth = (totalWidth - PANE_GAP * (children.length - 1)) / children.length
-      let cx = x + PADDING
+      let cx = x
       for (const child of children) {
         const cp = calculateLayout(child, cx, y, portionWidth, height)
         panes.push(...cp)
         cx += portionWidth + PANE_GAP
       }
     } else {
-      const totalHeight = height - HEADER_HEIGHT - PADDING
+      const totalHeight = height
       const portionHeight = (totalHeight - PANE_GAP * (children.length - 1)) / children.length
-      let cy = y + HEADER_HEIGHT
+      let cy = y
       for (const child of children) {
         const cp = calculateLayout(child, x, cy, width, portionHeight)
         panes.push(...cp)
@@ -120,10 +120,10 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
         width,
         height,
         panes: [{
-          x: PADDING,
-          y: HEADER_HEIGHT,
-          width: width - PADDING * 2,
-          height: height - HEADER_HEIGHT - PADDING,
+          x: 0,
+          y: 0,
+          width: width,
+          height: height,
           name: 'Empty Layout',
           tabs: [],
         }],
@@ -138,11 +138,11 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
 
     if (splits.length > 1) {
       // Stack splits vertically
-      const totalHeight = height - HEADER_HEIGHT - PADDING
+      const totalHeight = height
       const portionHeight = (totalHeight - PANE_GAP * (splits.length - 1)) / splits.length
-      let cy = HEADER_HEIGHT
+      let cy = 0
       for (const split of splits) {
-        const childPanes = calculateLayout(split, PADDING, cy, width - PADDING * 2, portionHeight)
+        const childPanes = calculateLayout(split, 0, cy, width, portionHeight)
         panes.push(...childPanes)
         cy += portionHeight + PANE_GAP
       }
@@ -152,8 +152,8 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
       panes.push(...childPanes)
     } else if (directPanes.length > 0) {
       // Direct panes at layout level
-      const paneWidth = (width - PADDING * 2 - PANE_GAP * (directPanes.length - 1)) / directPanes.length
-      let cx = PADDING
+      const paneWidth = (width - PANE_GAP * (directPanes.length - 1)) / directPanes.length
+      let cx = 0
       for (const pane of directPanes) {
         const childPanes = calculateLayout(pane, cx, 0, paneWidth, height)
         panes.push(...childPanes)
@@ -178,10 +178,10 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
         width,
         height,
         panes: [{
-          x: PADDING,
-          y: HEADER_HEIGHT,
-          width: width - PADDING * 2,
-          height: height - HEADER_HEIGHT - PADDING,
+          x: 0,
+          y: 0,
+          width: width,
+          height: height,
           name: 'Empty Layout',
           tabs: [],
         }],
@@ -223,11 +223,11 @@ export function generateSVG(diagram: LayoutDiagram, activeTab: string = 'Main'):
   const tabBarHeight = tabLabels.length > 1 ? TAB_HEIGHT * Math.min(tabLabels.length, 3) : 0
 
   const paneRects = panes.map(p => `
-    <rect x="${p.x}" y="${p.y}" width="${p.width}" height="${p.height}" fill="var(--surface-secondary)" stroke="var(--border)" stroke-width="1" rx="4"/>
-    <text x="${p.x + p.width / 2}" y="${p.y + p.height / 2}" text-anchor="middle" dominant-baseline="middle" fill="var(--text-primary)" font-family="ui-monospace, monospace" font-size="12">
+    <rect x="${p.x}" y="${p.y + HEADER_HEIGHT}" width="${p.width}" height="${p.height}" fill="var(--surface-secondary)" stroke="var(--border)" stroke-width="1" rx="4"/>
+    <text x="${p.x + p.width / 2}" y="${p.y + HEADER_HEIGHT + p.height / 2}" text-anchor="middle" dominant-baseline="middle" fill="var(--text-primary)" font-family="ui-monospace, monospace" font-size="12">
       ${escapeXml(p.name)}
     </text>
-    ${p.command ? `<text x="${p.x + p.width / 2}" y="${p.y + p.height / 2 + 16}" text-anchor="middle" dominant-baseline="middle" fill="var(--text-muted)" font-family="ui-monospace, monospace" font-size="10">
+    ${p.command ? `<text x="${p.x + p.width / 2}" y="${p.y + HEADER_HEIGHT + p.height / 2 + 16}" text-anchor="middle" dominant-baseline="middle" fill="var(--text-muted)" font-family="ui-monospace, monospace" font-size="10">
       ${escapeXml(p.command.length > 25 ? p.command.slice(0, 22) + '...' : p.command)}
     </text>` : ''}
   `).join('')
@@ -237,8 +237,8 @@ export function generateSVG(diagram: LayoutDiagram, activeTab: string = 'Main'):
     <text x="${i * 100 + 55}" y="18" text-anchor="middle" fill="${tab === activeTab ? 'var(--text-primary)' : 'var(--text-muted)'}" font-family="ui-monospace, monospace" font-size="11">${escapeXml(tab)}</text>
   `).join('')
 
-  return `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
-    <rect width="100%" height="100%" fill="var(--surface)" rx="8"/>
+  return `<svg width="${width}" height="${height + HEADER_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100%" height="${height + HEADER_HEIGHT}" fill="var(--surface)" rx="8"/>
     <rect x="0" y="0" width="${width}" height="${HEADER_HEIGHT}" fill="var(--surface-secondary)" rx="8"/>
     ${tabBars}
     <rect x="0" y="${HEADER_HEIGHT - 4}" width="${width}" height="4" fill="var(--surface-secondary)"/>
