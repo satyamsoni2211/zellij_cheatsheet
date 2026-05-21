@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { ThemeToggle } from './ThemeToggle'
 import { MobileDrawer } from './MobileDrawer'
+import { CommandPalette } from '@/components/ui/CommandPalette'
 
 const ZELLIJ_VERSION = 'v0.40'
 
@@ -122,24 +123,7 @@ export function Navbar() {
             {/* Right: Actions */}
             <div className="flex items-center gap-2">
               {/* Search trigger */}
-              <button
-                className="p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border)] hover:border-[var(--border-strong)] transition-colors"
-                aria-label="Search shortcuts"
-              >
-                <svg
-                  className="w-4 h-4 text-[var(--text-secondary)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
+              <CommandPalette />
 
               {/* Theme toggle */}
               <ThemeToggle />

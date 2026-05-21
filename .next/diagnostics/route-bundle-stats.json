@@ -1,26 +1,44 @@
 [
   {
     "route": "/",
-    "firstLoadUncompressedJsBytes": 517311,
+    "firstLoadUncompressedJsBytes": 655250,
     "firstLoadChunkPaths": [
-      ".next/static/chunks/03niv-.paa4q..js",
-      ".next/static/chunks/0dbhjjzl8qfwv.js",
-      ".next/static/chunks/0ht900cau6_ur.js",
-      ".next/static/chunks/0r8nt2o8muejo.js",
+      ".next/static/chunks/0slcvbeb1w5xl.js",
+      ".next/static/chunks/0d3shmwh5_nmn.js",
+      ".next/static/chunks/0ufq35rvk-s-q.js",
+      ".next/static/chunks/14c2kqup9cael.js",
+      ".next/static/chunks/12sb0-mf3rsd_.js",
+      ".next/static/chunks/0tszvp5wpnn-t.js",
       ".next/static/chunks/07lhk_q6pmm3r.js",
-      ".next/static/chunks/turbopack-05c8c~j12fn14.js"
+      ".next/static/chunks/14w_kqlcp4t3-.js",
+      ".next/static/chunks/turbopack-03qbur-e-ov8s.js"
+    ]
+  },
+  {
+    "route": "/print",
+    "firstLoadUncompressedJsBytes": 523522,
+    "firstLoadChunkPaths": [
+      ".next/static/chunks/0slcvbeb1w5xl.js",
+      ".next/static/chunks/0d3shmwh5_nmn.js",
+      ".next/static/chunks/0ka051yepewro.js",
+      ".next/static/chunks/12sb0-mf3rsd_.js",
+      ".next/static/chunks/0tszvp5wpnn-t.js",
+      ".next/static/chunks/07lhk_q6pmm3r.js",
+      ".next/static/chunks/14w_kqlcp4t3-.js",
+      ".next/static/chunks/turbopack-03qbur-e-ov8s.js"
     ]
   },
   {
     "route": "/_not-found",
-    "firstLoadUncompressedJsBytes": 517311,
+    "firstLoadUncompressedJsBytes": 517694,
     "firstLoadChunkPaths": [
-      ".next/static/chunks/03niv-.paa4q..js",
-      ".next/static/chunks/0dbhjjzl8qfwv.js",
-      ".next/static/chunks/0ht900cau6_ur.js",
-      ".next/static/chunks/0r8nt2o8muejo.js",
+      ".next/static/chunks/0slcvbeb1w5xl.js",
+      ".next/static/chunks/0d3shmwh5_nmn.js",
+      ".next/static/chunks/12sb0-mf3rsd_.js",
+      ".next/static/chunks/0tszvp5wpnn-t.js",
       ".next/static/chunks/07lhk_q6pmm3r.js",
-      ".next/static/chunks/turbopack-05c8c~j12fn14.js"
+      ".next/static/chunks/14w_kqlcp4t3-.js",
+      ".next/static/chunks/turbopack-03qbur-e-ov8s.js"
     ]
   }
 ]

@@ -1,3 +1,6 @@
+@import 'tailwindcss';
+
+/* Theme CSS variables - loaded after Tailwind */
 @import './themes/terminal.css';
 @import './themes/paper.css';
 @import './themes/gruvbox.css';
@@ -35,4 +38,169 @@
   --kbd-bg: #1e293b;
   --kbd-border: #334155;
   --kbd-text: #f1f5f9;
+}
+
+/* Theme classes override :root defaults */
+.terminal-dark {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-terminal: #020617;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-mono: #38bdf8;
+  --accent: #2dd4bf;
+  --accent-muted: #0d9488;
+  --accent-text: #042f2e;
+  --border: #334155;
+  --border-strong: #475569;
+  --mode-normal: #22c55e;
+  --mode-pane: #eab308;
+  --mode-tab: #3b82f6;
+  --mode-scroll: #06b6d4;
+  --mode-session: #a855f7;
+  --kbd-bg: #1e293b;
+  --kbd-border: #334155;
+  --kbd-text: #f1f5f9;
+}
+
+.paper-light {
+  --bg-primary: #fafaf7;
+  --bg-secondary: #f1f5f9;
+  --bg-terminal: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-mono: #0f766e;
+  --accent: #0d9488;
+  --accent-muted: #5eead4;
+  --accent-text: #ffffff;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --mode-normal: #059669;
+  --mode-pane: #ca8a04;
+  --mode-tab: #2563eb;
+  --mode-scroll: #0891b2;
+  --mode-session: #7c3aed;
+  --kbd-bg: #f1f5f9;
+  --kbd-border: #cbd5e1;
+  --kbd-text: #1e293b;
+}
+
+.gruvbox-warm {
+  --bg-primary: #282828;
+  --bg-secondary: #32322c;
+  --bg-terminal: #1e1e1e;
+  --text-primary: #ebdbb2;
+  --text-secondary: #a79a76;
+  --text-mono: #fabd2f;
+  --accent: #fabd2f;
+  --accent-muted: #d79920;
+  --accent-text: #1e1e1e;
+  --border: #504945;
+  --border-strong: #665c54;
+  --mode-normal: #b8bb26;
+  --mode-pane: #fabd2f;
+  --mode-tab: #83a598;
+  --mode-scroll: #8ec07c;
+  --mode-session: #d3869b;
+  --kbd-bg: #3c3836;
+  --kbd-border: #504945;
+  --kbd-text: #ebdbb2;
+}
+
+.nightowl {
+  --bg-primary: #011627;
+  --bg-secondary: #0d2a46;
+  --bg-terminal: #000814;
+  --text-primary: #d6deeb;
+  --text-secondary: #7a8fa8;
+  --text-mono: #82aaff;
+  --accent: #82aaff;
+  --accent-muted: #5c86d2;
+  --accent-text: #011627;
+  --border: #1f3a5f;
+  --border-strong: #2d4a6f;
+  --mode-normal: #addb67;
+  --mode-pane: #ff5874;
+  --mode-tab: #82aaff;
+  --mode-scroll: #7aa2f9;
+  --mode-session: #c792ea;
+  --kbd-bg: #1f3a5f;
+  --kbd-border: #2d4a6f;
+  --kbd-text: #d6deeb;
+}
+
+/* Base CSS Resets */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  line-height: 1.5;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  overflow-wrap: break-word;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Focus visible styles */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
