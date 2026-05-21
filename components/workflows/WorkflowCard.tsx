@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Workflow } from '@/data/workflows'
 import { WorkflowStepper } from './WorkflowStepper'
 
@@ -33,119 +33,160 @@ const difficultyLabels = {
 }
 
 export function WorkflowCard({ workflow }: WorkflowCardProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCompleted, setIsCompleted] = useState(false)
 
   const style = difficultyStyles[workflow.difficulty]
 
-  const toggleExpand = () => {
-    if (isCompleted) return
-    setIsExpanded(!isExpanded)
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isModalOpen) {
+        setIsModalOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleEscape)
+    return () => window.removeEventListener('keydown', handleEscape)
+  }, [isModalOpen])
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isModalOpen])
+
+  const handleStart = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsModalOpen(true)
+  }
+
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      setIsModalOpen(false)
+    }
+  }
+
+  const handleComplete = () => {
+    setIsCompleted(true)
+    setIsModalOpen(false)
   }
 
   return (
-    <div
-      className={`
-        rounded-xl border transition-all duration-300
-        bg-[var(--bg-primary)] border-[var(--border)]
-        ${isCompleted ? 'ring-2 ring-[var(--accent)]' : ''}
-      `}
-    >
-      {/* Header */}
-      <div className="p-5 cursor-pointer" onClick={toggleExpand}>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              {/* Difficulty badge */}
-              <span
-                className={`
-                  inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold uppercase tracking-wider
-                  ${style.bg} ${style.text} ${style.border}
-                `}
-              >
-                {difficultyLabels[workflow.difficulty]}
-              </span>
+    <>
+      <div
+        className={`
+          rounded-xl border transition-all duration-300
+          bg-[var(--bg-primary)] border-[var(--border)]
+          ${isCompleted ? 'ring-2 ring-[var(--accent)]' : ''}
+        `}
+      >
+        {/* Header */}
+        <div className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                {/* Difficulty badge */}
+                <span
+                  className={`
+                    inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold uppercase tracking-wider
+                    ${style.bg} ${style.text} ${style.border}
+                  `}
+                >
+                  {difficultyLabels[workflow.difficulty]}
+                </span>
+                {isCompleted && (
+                  <span className="px-2 py-0.5 rounded text-xs font-mono font-bold uppercase tracking-wider bg-[var(--accent)]/20 text-[var(--accent)]">
+                    Completed
+                  </span>
+                )}
+              </div>
+
+              {/* Title */}
+              <h3 className="text-lg font-mono font-bold text-[var(--text-primary)] mb-2">
+                {workflow.title}
+              </h3>
+
+              {/* Description */}
+              <p className="text-sm text-[var(--text-secondary)]">
+                {workflow.description}
+              </p>
             </div>
 
-            {/* Title */}
-            <h3 className="text-lg font-mono font-bold text-[var(--text-primary)] mb-2">
-              {workflow.title}
-            </h3>
-
-            {/* Description */}
-            <p className="text-sm text-[var(--text-secondary)]">
-              {workflow.description}
-            </p>
-          </div>
-
-          {/* Expand/collapse indicator */}
-          <div className="flex-shrink-0">
-            {isCompleted && (
-              <span className="px-3 py-1 bg-[var(--accent)]/20 text-[var(--accent)] text-sm font-mono rounded">
-                Completed
-              </span>
-            )}
-            {!isExpanded && !isCompleted && (
+            {/* Action button */}
+            <div className="flex-shrink-0">
               <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setIsExpanded(true)
-                }}
+                onClick={handleStart}
                 className="px-4 py-2 bg-[var(--bg-secondary)] text-[var(--text-primary)] font-mono text-sm rounded-lg
                   hover:bg-[var(--border)] transition-colors duration-200"
               >
-                Start
+                {isCompleted ? 'Review' : 'Start'}
               </button>
-            )}
-            {(isExpanded || isCompleted) && (
-              <svg
-                className={`w-6 h-6 text-[var(--text-secondary)] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            )}
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Expandable stepper */}
-      {isExpanded && !isCompleted && (
-        <div className="px-5 pb-5 border-t border-[var(--border)] pt-4">
-          <WorkflowStepper
-            steps={workflow.steps}
-            onComplete={() => setIsCompleted(true)}
-          />
-        </div>
-      )}
+      {/* Modal */}
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={handleOverlayClick}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-      {/* Completed state */}
-      {isCompleted && (
-        <div className="px-5 pb-5 border-t border-[var(--border)] pt-4">
-          <div className="flex items-center gap-3 p-4 bg-[var(--accent)]/10 rounded-lg">
-            <div className="w-10 h-10 rounded-full bg-[var(--accent)] flex items-center justify-center">
-              <svg className="w-5 h-5 text-[var(--accent-text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
+          {/* Modal content */}
+          <div className="relative w-full max-w-2xl max-h-[85vh] overflow-auto rounded-2xl bg-[var(--bg-primary)] border border-[var(--border)] shadow-2xl">
+            {/* Modal header */}
+            <div className="sticky top-0 z-10 flex items-center justify-between p-5 border-b border-[var(--border)] bg-[var(--bg-primary)]">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span
+                    className={`
+                      inline-flex items-center px-2 py-0.5 rounded text-xs font-mono font-bold uppercase tracking-wider
+                      ${style.bg} ${style.text} ${style.border}
+                    `}
+                  >
+                    {difficultyLabels[workflow.difficulty]}
+                  </span>
+                  <span className="text-sm text-[var(--text-secondary)]">
+                    {workflow.steps.length} steps
+                  </span>
+                </div>
+                <h2 className="text-xl font-mono font-bold text-[var(--text-primary)]">
+                  {workflow.title}
+                </h2>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-2 rounded-lg bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--border)] transition-colors"
+                aria-label="Close modal"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-            <div className="flex-1">
-              <p className="font-mono font-bold text-[var(--accent)]">Completed</p>
-              <p className="text-sm text-[var(--text-secondary)]">You&apos;ve mastered this workflow!</p>
+
+            {/* Modal body */}
+            <div className="p-5">
+              <p className="text-sm text-[var(--text-secondary)] mb-6">
+                {workflow.description}
+              </p>
+              <WorkflowStepper
+                steps={workflow.steps}
+                onComplete={handleComplete}
+              />
             </div>
-            <button
-              onClick={() => {
-                setIsExpanded(false)
-                setIsCompleted(false)
-              }}
-              className="px-3 py-1 text-sm font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
-            >
-              Reset
-            </button>
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
