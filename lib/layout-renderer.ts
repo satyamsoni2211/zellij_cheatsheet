@@ -95,10 +95,10 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
         width,
         height,
         panes: [{
-          x: PADDING,
-          y: HEADER_HEIGHT,
-          width: width - PADDING * 2,
-          height: height - HEADER_HEIGHT - PADDING,
+          x: 0,
+          y: 0,
+          width: width,
+          height: height,
           name: 'Empty Layout',
           tabs: [],
         }],
@@ -115,7 +115,7 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
     const nonTabChildren = layoutChildren.filter(n => n.name !== 'tab')
     const tabChildren = layoutChildren.filter(n => n.name === 'tab')
 
-    if (nonTabChildren.length === 0) {
+    if (nonTabChildren.length === 0 && tabChildren.length === 0) {
       return {
         width,
         height,
@@ -131,27 +131,14 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
       }
     }
 
-    // Distribute vertical space among top-level splits/panes
-    // If multiple splits, stack them vertically. Single split takes full width.
+    // Count total top-level bands (splits + each tab = n splits + tabChildren.length tabs)
+    // Each band gets equal vertical space
     const splits = nonTabChildren.filter(n => n.name === 'split')
     const directPanes = nonTabChildren.filter(n => n.name === 'pane')
+    const topLevelBands = splits.length + tabChildren.length
 
-    if (splits.length > 1) {
-      // Stack splits vertically
-      const totalHeight = height
-      const portionHeight = (totalHeight - PANE_GAP * (splits.length - 1)) / splits.length
-      let cy = 0
-      for (const split of splits) {
-        const childPanes = calculateLayout(split, 0, cy, width, portionHeight)
-        panes.push(...childPanes)
-        cy += portionHeight + PANE_GAP
-      }
-    } else if (splits.length === 1) {
-      // Single split takes full area
-      const childPanes = calculateLayout(splits[0], 0, 0, width, height)
-      panes.push(...childPanes)
-    } else if (directPanes.length > 0) {
-      // Direct panes at layout level
+    if (topLevelBands === 0 && directPanes.length > 0) {
+      // Only direct panes at layout level
       const paneWidth = (width - PANE_GAP * (directPanes.length - 1)) / directPanes.length
       let cx = 0
       for (const pane of directPanes) {
@@ -159,17 +146,26 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
         panes.push(...childPanes)
         cx += paneWidth + PANE_GAP
       }
-    }
+    } else {
+      // Stack bands vertically: splits first, then tabs
+      const totalHeight = height
+      const bandHeight = (totalHeight - PANE_GAP * (topLevelBands - 1)) / topLevelBands
+      let cy = 0
+      let bandIndex = 0
 
-    // Tab children are rendered at their own y level (above splits)
-    // Each tab occupies a horizontal band
-    if (tabChildren.length > 0) {
-      const tabBandHeight = (height - HEADER_HEIGHT - PADDING) / (tabChildren.length + 1)
-      let ty = HEADER_HEIGHT
-      for (const tab of tabChildren) {
-        const childPanes = calculateLayout(tab, PADDING, ty, width - PADDING * 2, tabBandHeight)
+      // Render splits first (each split is one band)
+      for (const split of splits) {
+        const childPanes = calculateLayout(split, 0, cy, width, bandHeight)
         panes.push(...childPanes)
-        ty += tabBandHeight + PANE_GAP
+        cy += bandHeight + PANE_GAP
+        bandIndex++
+      }
+
+      // Then render each tab (each tab is one band)
+      for (const tab of tabChildren) {
+        const childPanes = calculateLayout(tab, 0, cy, width, bandHeight)
+        panes.push(...childPanes)
+        cy += bandHeight + PANE_GAP
       }
     }
 
