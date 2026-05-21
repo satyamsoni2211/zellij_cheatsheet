@@ -29,74 +29,48 @@ export function calculateLayout(node: KDLNode, x: number, y: number, width: numb
   const panes: PaneRect[] = []
 
   if (node.name === 'pane') {
-    const paneName = node.args[0] || node.props.name || 'pane'
-    const paneCommand = node.props.command
     panes.push({
       x: x + PADDING,
       y: y + HEADER_HEIGHT,
       width: Math.max(width - PADDING * 2, MIN_PANE_WIDTH),
       height: Math.max(height - HEADER_HEIGHT - PADDING * 2, MIN_PANE_HEIGHT),
-      name: paneName,
-      command: paneCommand,
+      name: node.args[0] || node.props.name || 'pane',
+      command: node.props.command,
       tabs: [],
     })
     return panes
   }
 
   if (node.name === 'split') {
-    const direction = node.props.direction || 'horizontal'
+    const isHorizontal = node.props.direction !== 'vertical'
     const children = node.children
-
     if (children.length === 0) return panes
 
-    if (direction === 'horizontal') {
+    if (isHorizontal) {
       const totalWidth = width - PADDING * 2
       const portionWidth = (totalWidth - PANE_GAP * (children.length - 1)) / children.length
-      let currentX = x + PADDING
-
+      let cx = x + PADDING
       for (const child of children) {
-        const childPanes = calculateLayout(child, currentX, y, portionWidth, height)
-        for (const cp of childPanes) {
-          cp.x = currentX
-          cp.width = portionWidth
-          cp.y = y + HEADER_HEIGHT
-          cp.height = height - HEADER_HEIGHT - PADDING
-        }
-        panes.push(...childPanes)
-        currentX += portionWidth + PANE_GAP
+        const cp = calculateLayout(child, cx, y, portionWidth, height)
+        panes.push(...cp)
+        cx += portionWidth + PANE_GAP
       }
     } else {
       const totalHeight = height - HEADER_HEIGHT - PADDING
       const portionHeight = (totalHeight - PANE_GAP * (children.length - 1)) / children.length
-      let currentY = y + HEADER_HEIGHT
-
+      let cy = y + HEADER_HEIGHT
       for (const child of children) {
-        const childPanes = calculateLayout(child, x, currentY, width, portionHeight)
-        for (const cp of childPanes) {
-          cp.y = currentY
-          cp.height = portionHeight
-          cp.x = x + PADDING
-          cp.width = width - PADDING * 2
-        }
-        panes.push(...childPanes)
-        currentY += portionHeight + PANE_GAP
+        const cp = calculateLayout(child, x, cy, width, portionHeight)
+        panes.push(...cp)
+        cy += portionHeight + PANE_GAP
       }
     }
     return panes
   }
 
-  if (node.name === 'tab') {
+  if (node.name === 'tab' || node.name === 'layout') {
     for (const child of node.children) {
-      const childPanes = calculateLayout(child, x, y, width, height)
-      panes.push(...childPanes)
-    }
-    return panes
-  }
-
-  if (node.name === 'layout') {
-    for (const child of node.children) {
-      const childPanes = calculateLayout(child, x, y, width, height)
-      panes.push(...childPanes)
+      panes.push(...calculateLayout(child, x, y, width, height))
     }
     return panes
   }
