@@ -112,10 +112,64 @@ export function renderLayoutToSVG(children: KDLNode[], width: number = 600, heig
     const tabs = extractTabs(layoutChildren)
 
     const panes: PaneRect[] = []
-    for (const child of layoutChildren) {
-      if (child.name === 'tab' || child.name === 'split' || child.name === 'pane') {
-        const childPanes = calculateLayout(child, 0, 0, width, height)
+    const nonTabChildren = layoutChildren.filter(n => n.name !== 'tab')
+    const tabChildren = layoutChildren.filter(n => n.name === 'tab')
+
+    if (nonTabChildren.length === 0) {
+      return {
+        width,
+        height,
+        panes: [{
+          x: PADDING,
+          y: HEADER_HEIGHT,
+          width: width - PADDING * 2,
+          height: height - HEADER_HEIGHT - PADDING,
+          name: 'Empty Layout',
+          tabs: [],
+        }],
+        tabs: [],
+      }
+    }
+
+    // Distribute vertical space among top-level splits/panes
+    // If multiple splits, stack them vertically. Single split takes full width.
+    const splits = nonTabChildren.filter(n => n.name === 'split')
+    const directPanes = nonTabChildren.filter(n => n.name === 'pane')
+
+    if (splits.length > 1) {
+      // Stack splits vertically
+      const totalHeight = height - HEADER_HEIGHT - PADDING
+      const portionHeight = (totalHeight - PANE_GAP * (splits.length - 1)) / splits.length
+      let cy = HEADER_HEIGHT
+      for (const split of splits) {
+        const childPanes = calculateLayout(split, PADDING, cy, width - PADDING * 2, portionHeight)
         panes.push(...childPanes)
+        cy += portionHeight + PANE_GAP
+      }
+    } else if (splits.length === 1) {
+      // Single split takes full area
+      const childPanes = calculateLayout(splits[0], 0, 0, width, height)
+      panes.push(...childPanes)
+    } else if (directPanes.length > 0) {
+      // Direct panes at layout level
+      const paneWidth = (width - PADDING * 2 - PANE_GAP * (directPanes.length - 1)) / directPanes.length
+      let cx = PADDING
+      for (const pane of directPanes) {
+        const childPanes = calculateLayout(pane, cx, 0, paneWidth, height)
+        panes.push(...childPanes)
+        cx += paneWidth + PANE_GAP
+      }
+    }
+
+    // Tab children are rendered at their own y level (above splits)
+    // Each tab occupies a horizontal band
+    if (tabChildren.length > 0) {
+      const tabBandHeight = (height - HEADER_HEIGHT - PADDING) / (tabChildren.length + 1)
+      let ty = HEADER_HEIGHT
+      for (const tab of tabChildren) {
+        const childPanes = calculateLayout(tab, PADDING, ty, width - PADDING * 2, tabBandHeight)
+        panes.push(...childPanes)
+        ty += tabBandHeight + PANE_GAP
       }
     }
 
