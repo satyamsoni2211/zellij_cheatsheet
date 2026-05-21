@@ -38,6 +38,12 @@
   --kbd-bg: #1e293b;
   --kbd-border: #334155;
   --kbd-text: #f1f5f9;
+
+  /* Surface (same as backgrounds for backward compat) */
+  --surface: #1e293b;
+  --surface-secondary: #0f172a;
+  --surface-tertiary: #020617;
+  --text-muted: #64748b;
 }
 
 /* Theme classes override :root defaults */
@@ -48,6 +54,7 @@
   --text-primary: #f1f5f9;
   --text-secondary: #94a3b8;
   --text-mono: #38bdf8;
+  --text-muted: #64748b;
   --accent: #2dd4bf;
   --accent-muted: #0d9488;
   --accent-text: #042f2e;
@@ -61,6 +68,9 @@
   --kbd-bg: #1e293b;
   --kbd-border: #334155;
   --kbd-text: #f1f5f9;
+  --surface: #1e293b;
+  --surface-secondary: #0f172a;
+  --surface-tertiary: #020617;
 }
 
 .paper-light {
@@ -70,6 +80,7 @@
   --text-primary: #1e293b;
   --text-secondary: #64748b;
   --text-mono: #0f766e;
+  --text-muted: #94a3b8;
   --accent: #0d9488;
   --accent-muted: #5eead4;
   --accent-text: #ffffff;
@@ -83,6 +94,9 @@
   --kbd-bg: #f1f5f9;
   --kbd-border: #cbd5e1;
   --kbd-text: #1e293b;
+  --surface: #f1f5f9;
+  --surface-secondary: #e2e8f0;
+  --surface-tertiary: #e2e8f0;
 }
 
 .gruvbox-warm {
@@ -92,6 +106,7 @@
   --text-primary: #ebdbb2;
   --text-secondary: #a79a76;
   --text-mono: #fabd2f;
+  --text-muted: #928055;
   --accent: #fabd2f;
   --accent-muted: #d79920;
   --accent-text: #1e1e1e;
@@ -105,6 +120,9 @@
   --kbd-bg: #3c3836;
   --kbd-border: #504945;
   --kbd-text: #ebdbb2;
+  --surface: #32322c;
+  --surface-secondary: #282828;
+  --surface-tertiary: #1e1e1e;
 }
 
 .nightowl {
@@ -114,6 +132,7 @@
   --text-primary: #d6deeb;
   --text-secondary: #7a8fa8;
   --text-mono: #82aaff;
+  --text-muted: #5a7394;
   --accent: #82aaff;
   --accent-muted: #5c86d2;
   --accent-text: #011627;
@@ -127,6 +146,9 @@
   --kbd-bg: #1f3a5f;
   --kbd-border: #2d4a6f;
   --kbd-text: #d6deeb;
+  --surface: #0d2a46;
+  --surface-secondary: #011627;
+  --surface-tertiary: #000814;
 }
 
 /* Base CSS Resets — inside @layer base so Tailwind utilities (layer: utilities) still win */
