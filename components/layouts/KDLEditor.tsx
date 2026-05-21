@@ -1,6 +1,31 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { EditorState, Extension } from '@codemirror/state'
+import {
+  EditorView,
+  lineNumbers,
+  highlightActiveLine,
+  highlightSpecialChars,
+  drawSelection,
+  dropCursor,
+  rectangularSelection,
+  crosshairCursor,
+  highlightActiveLineGutter,
+  keymap,
+} from '@codemirror/view'
+import {
+  defaultHighlightStyle,
+  syntaxHighlighting,
+  indentOnInput,
+  bracketMatching,
+  foldGutter,
+  foldKeymap,
+} from '@codemirror/language'
+import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
+import { searchKeymap, highlightSelectionMatches } from '@codemirror/search'
+import { autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete'
+import { javascript } from '@codemirror/lang-javascript'
 
 interface KDLEditorProps {
   initialValue?: string
@@ -8,103 +33,135 @@ interface KDLEditorProps {
   readOnly?: boolean
 }
 
-// Simple KDL syntax highlighting for preview
-const KDLSyntaxHighlighter = ({ code }: { code: string }) => {
-  const highlighted = code
-    .replace(/\b(layout|tab|pane|split)\b/g, '<span style="color:#c678dd;font-weight:bold">$1</span>')
-    .replace(/\b(direction|size|command|cwd|name)\b/g, '<span style="color:#e5c07b">$1</span>')
-    .replace(/=/g, '<span style="color:#56b6c2">=</span>')
-    .replace(/"([^"]*)"/g, '<span style="color:#98c379">"$1"</span>')
+// KDL syntax highlighting - simple tokenizer for config format
+const kdlHighlighting = syntaxHighlighting(defaultHighlightStyle)
 
-  return (
-    <div
-      className="font-mono text-sm leading-6 whitespace-pre-wrap"
-      dangerouslySetInnerHTML={{ __html: highlighted }}
-    />
-  )
+const kdlLanguage = javascript({ jsx: false, typescript: false })
+
+function createEditorExtensions(readOnly: boolean): Extension {
+  return [
+    lineNumbers(),
+    highlightActiveLineGutter(),
+    highlightSpecialChars(),
+    history(),
+    foldGutter(),
+    drawSelection(),
+    dropCursor(),
+    EditorState.allowMultipleSelections.of(true),
+    syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+    indentOnInput(),
+    bracketMatching(),
+    closeBrackets(),
+    autocompletion(),
+    rectangularSelection(),
+    crosshairCursor(),
+    highlightActiveLine(),
+    highlightSelectionMatches(),
+    kdlLanguage,
+    kdlHighlighting,
+    keymap.of([
+      ...closeBracketsKeymap,
+      ...defaultKeymap,
+      ...searchKeymap,
+      ...historyKeymap,
+      ...foldKeymap,
+      ...completionKeymap,
+      indentWithTab,
+    ]),
+    EditorView.editable.of(!readOnly),
+    EditorView.theme({
+      '&': {
+        height: '100%',
+        fontSize: '14px',
+      },
+      '.cm-scroller': {
+        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+        lineHeight: '1.6',
+      },
+      '.cm-content': {
+        padding: '12px 0',
+      },
+      '.cm-gutters': {
+        backgroundColor: 'var(--surface-secondary)',
+        color: 'var(--text-muted)',
+        border: 'none',
+        paddingRight: '8px',
+      },
+      '.cm-activeLineGutter': {
+        backgroundColor: 'var(--surface)',
+      },
+      '.cm-activeLine': {
+        backgroundColor: 'var(--surface)',
+      },
+      '.cm-selectionMatch': {
+        backgroundColor: 'var(--primary-alpha-20)',
+      },
+      '&.cm-focused .cm-cursor': {
+        borderLeftColor: 'var(--text-primary)',
+      },
+      '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
+        backgroundColor: 'var(--primary-alpha-20)',
+      },
+    }),
+  ]
 }
 
 export function KDLEditor({ initialValue = '', onChange, readOnly = false }: KDLEditorProps) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const [code, setCode] = useState(initialValue)
-  const [lineNumbers, setLineNumbers] = useState<string[]>([])
+  const editorRef = useRef<HTMLDivElement>(null)
+  const viewRef = useRef<EditorView | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   useEffect(() => {
-    if (textareaRef.current) {
-      const lines = code.split('\n')
-      setLineNumbers(lines.map((_, i) => String(i + 1)))
-    }
-  }, [code])
+    if (!editorRef.current) return
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newValue = e.target.value
-    setCode(newValue)
-    onChange?.(newValue)
-  }
+    const updateListener = EditorView.updateListener.of((update) => {
+      if (update.docChanged && onChange) {
+        const newValue = update.state.doc.toString()
+        onChange(newValue)
+      }
+    })
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Tab') {
-      e.preventDefault()
-      const target = e.currentTarget
-      const start = target.selectionStart
-      const end = target.selectionEnd
-      const newValue = code.substring(0, start) + '  ' + code.substring(end)
-      setCode(newValue)
-      onChange?.(newValue)
-      // Set cursor position after the tab
-      setTimeout(() => {
-        target.selectionStart = target.selectionEnd = start + 2
-      }, 0)
+    const state = EditorState.create({
+      doc: initialValue,
+      extensions: [
+        createEditorExtensions(readOnly),
+        updateListener,
+      ],
+    })
+
+    const view = new EditorView({
+      state,
+      parent: editorRef.current,
+    })
+
+    viewRef.current = view
+    setIsInitialized(true)
+
+    return () => {
+      view.destroy()
+      viewRef.current = null
     }
-    // Auto-close brackets
-    if (e.key === '{') {
-      e.preventDefault()
-      const target = e.currentTarget
-      const start = target.selectionStart
-      const end = target.selectionEnd
-      const newValue = code.substring(0, start) + '{}' + code.substring(end)
-      setCode(newValue)
-      onChange?.(newValue)
-      setTimeout(() => {
-        target.selectionStart = target.selectionEnd = start + 1
-      }, 0)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Update content when initialValue changes externally
+  useEffect(() => {
+    if (viewRef.current && isInitialized) {
+      const currentValue = viewRef.current.state.doc.toString()
+      if (currentValue !== initialValue) {
+        viewRef.current.dispatch({
+          changes: {
+            from: 0,
+            to: currentValue.length,
+            insert: initialValue,
+          },
+        })
+      }
     }
-  }
+  }, [initialValue, isInitialized])
 
   return (
     <div className="relative flex h-full min-h-[300px] rounded-lg border border-[var(--border)] bg-[var(--surface)] overflow-hidden">
-      {/* Line numbers */}
-      <div className="flex-shrink-0 py-3 px-3 bg-[var(--surface-secondary)] border-r border-[var(--border)] text-right select-none">
-        <div className="font-mono text-xs text-[var(--text-muted)] leading-6">
-          {lineNumbers.map((num, i) => (
-            <div key={i}>{num}</div>
-          ))}
-        </div>
-      </div>
-
-      {/* Editor area */}
-      <div className="flex-1 relative">
-        {/* Syntax highlighted overlay */}
-        <div className="absolute inset-0 p-3 pointer-events-none overflow-auto">
-          <KDLSyntaxHighlighter code={code} />
-        </div>
-
-        {/* Actual textarea */}
-        <textarea
-          ref={textareaRef}
-          value={code}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          readOnly={readOnly}
-          className="absolute inset-0 w-full h-full p-3 font-mono text-sm leading-6 bg-transparent text-transparent caret-[var(--text-primary)] resize-none focus:outline-none"
-          spellCheck={false}
-          autoComplete="off"
-          autoCapitalize="off"
-        />
-      </div>
-
-      {/* Error gutter indicator */}
-      <div className="absolute top-0 right-0 w-1 h-full bg-transparent" />
+      <div ref={editorRef} className="w-full h-full" />
     </div>
   )
 }
