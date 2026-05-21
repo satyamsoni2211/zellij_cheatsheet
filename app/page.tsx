@@ -5,6 +5,7 @@ import { SimulatorSection } from '@/components/simulator/SimulatorSection'
 import { QuickRefDrawer } from '@/components/ui/QuickRefDrawer'
 import { CommandPalette } from '@/components/ui/CommandPalette'
 import { Footer } from '@/components/footer/Footer'
+import { PluginsSection } from '@/components/plugins/PluginsSection'
 
 export default function Home() {
   return (
@@ -23,7 +24,7 @@ export default function Home() {
         <p className="text-center text-[var(--text-secondary)] py-20">Layouts coming soon...</p>
       </div>
       <div id="plugins" className="scroll-mt-20">
-        <p className="text-center text-[var(--text-secondary)] py-20">Plugins coming soon...</p>
+        <PluginsSection />
       </div>
       <div id="workflows" className="scroll-mt-20">
         <p className="text-center text-[var(--text-secondary)] py-20">Workflows coming soon...</p>
