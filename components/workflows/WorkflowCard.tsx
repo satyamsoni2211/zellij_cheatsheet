@@ -38,6 +38,11 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
 
   const style = difficultyStyles[workflow.difficulty]
 
+  const toggleExpand = () => {
+    if (isCompleted) return
+    setIsExpanded(!isExpanded)
+  }
+
   return (
     <div
       className={`
@@ -47,10 +52,7 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
       `}
     >
       {/* Header */}
-      <div
-        className="p-5 cursor-pointer"
-        onClick={() => !isExpanded && setIsExpanded(true)}
-      >
+      <div className="p-5 cursor-pointer" onClick={toggleExpand}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-2">
@@ -78,6 +80,11 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
 
           {/* Expand/collapse indicator */}
           <div className="flex-shrink-0">
+            {isCompleted && (
+              <span className="px-3 py-1 bg-[var(--accent)]/20 text-[var(--accent)] text-sm font-mono rounded">
+                Completed
+              </span>
+            )}
             {!isExpanded && !isCompleted && (
               <button
                 onClick={(e) => {
@@ -90,7 +97,7 @@ export function WorkflowCard({ workflow }: WorkflowCardProps) {
                 Start
               </button>
             )}
-            {isExpanded && (
+            {(isExpanded || isCompleted) && (
               <svg
                 className={`w-6 h-6 text-[var(--text-secondary)] transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                 fill="none"
