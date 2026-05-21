@@ -1,0 +1,125 @@
+/* Print stylesheet for PDF saving */
+
+/* Hide elements not needed for printing */
+@media print {
+  /* Hide navigation and interactive elements */
+  header,
+  nav,
+  .sticky,
+  .fixed,
+  [data-drawer],
+  [class*="MobileDrawer"],
+  [class*="CommandPalette"],
+  [class*="QuickRefDrawer"],
+  button:not(.print-show),
+  a[target="_blank"],
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset background for print */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Remove gradients, shadows, and backdrop effects */
+  * {
+    background: white !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Use clean borders */
+  .border {
+    border-color: #ddd !important;
+  }
+
+  /* Typography adjustments */
+  body {
+    font-family: ui-sans-serif, system-ui, -apple-system, sans-serif !important;
+    font-size: 10pt !important;
+    line-height: 1.4 !important;
+  }
+
+  h1 {
+    font-size: 18pt !important;
+  }
+
+  h2 {
+    font-size: 14pt !important;
+  }
+
+  h3 {
+    font-size: 12pt !important;
+  }
+
+  /* Section spacing */
+  section {
+    page-break-inside: avoid;
+    margin-bottom: 12pt !important;
+  }
+
+  /* Two-column layout for shortcuts */
+  .shortcut-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8pt !important;
+  }
+
+  /* Kbd styling for print */
+  kbd {
+    background: #f0f0f0 !important;
+    border: 1px solid #ccc !important;
+    border-radius: 3pt !important;
+    padding: 1pt 4pt !important;
+    font-family: ui-monospace, monospace !important;
+    font-size: 8pt !important;
+  }
+
+  /* Mode badges */
+  .mode-badge {
+    border: 1px solid #666 !important;
+    padding: 1pt 3pt !important;
+    font-size: 7pt !important;
+    border-radius: 2pt !important;
+  }
+
+  /* Compact table rows */
+  tr {
+    page-break-inside: avoid;
+  }
+
+  /* Links - show URL in print */
+  a[href^="http"]:after {
+    content: " (" attr(href) ")";
+    font-size: 8pt !important;
+    color: #666 !important;
+  }
+
+  /* Hide footer on individual pages (let user control) */
+  footer {
+    display: none !important;
+  }
+
+  /* Page margins */
+  @page {
+    margin: 0.75in !important;
+    size: letter !important;
+  }
+}
+
+/* Screen-only: hide print-only elements */
+@media screen {
+  .print-only {
+    display: none !important;
+  }
+}
+
+/* Print-only: hide screen-only elements */
+@media print {
+  .screen-only {
+    display: none !important;
+  }
+}
